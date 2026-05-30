@@ -4,6 +4,18 @@
 
 const int gc_InvalidId = 0;
 
+const int gc_PlayerMax           = 8;
+// 玩家数量上限，玩家ID从1开始，0为无效ID
+
+const int gc_PlayerHandCardMax   = 6;
+// 玩家手牌数量上限
+
+const int gc_PlayerFieldCardMax  = 7;
+// 玩家场上卡牌数量上限
+
+const int gc_PlayerStoreCardMax  = 7;
+// 玩家商店卡牌数量上限
+
 const int gc_CardTemplateMax     = 500;
 // 卡牌模板上限
 
@@ -70,7 +82,7 @@ struct gs_CardTemplate
     bool lp_canMerge;
     // 卡牌能否三连
 
-    int[gc_UnitTypeMax + 1] lp_unitIds;
+    string[gc_UnitTypeMax + 1] lp_unitIds;
     // 卡牌内单位的id，1-200为通常单位，201-210为特殊单位（科技挂件，水晶塔等）
 
     int[gc_UnitTypeMax + 1] lp_unitAmounts;
@@ -79,6 +91,8 @@ struct gs_CardTemplate
     int[gc_CardEffectMax + 1] lp_effectIds;
     // 特效模板id表
 };
+
+gs_CardTemplate[gc_CardTemplateMax + 1] CardTemplateArray;
 
 //==================================================
 // Effect Template
@@ -114,4 +128,158 @@ struct gs_EffectTemplate
     // 额外效果参数表，效果模板可以通过这个表来存储一些额外的参数，以供条件函数、费用函数、目标选择函数和执行函数使用
 };
 
-//
+gs_EffectTemplate[gc_EffectTemplateMax + 1] EffectTemplateArray;
+
+//==================================================
+// Slot Instance 记录某个或某些特效的状态参数。
+// 每当一个特效被实例化。都会链接到一个Slot Instance来记录这个特效的状态参数，以供后续的条件函数、费用函数、目标选择函数和执行函数使用。
+//==================================================
+
+struct gs_SlotInstance
+{
+    int lp_ownerCardInstanceId;
+    // 所属卡牌实例的id
+
+    int lp_ownerPlayerId;
+    // 所属玩家id
+
+    int[gc_SlotIntParamMax + 1] lp_slotParameters;
+    // 记录数值型的状态参数
+
+    string[gc_SlotStringParamMax + 1] lp_slotParameters;
+    // 记录字符型的状态参数
+};
+
+gs_SlotInstance[gc_SlotInstanceMax + 1] SlotInstanceArray;
+
+//==================================================
+// Card Instance 在游戏初始化及游戏中，可以创建，删除，修改卡牌实例并与之交互
+//==================================================
+
+struct gs_CardInstance
+{
+    int lp_instanceId;
+    // 实例ID，在游戏初始化时及游戏时被创建
+
+    int lp_templateId;
+    // 模板ID，指向卡牌模板，决定卡牌的基本属性和效果
+
+    string lp_cardName;
+    // 卡牌名称
+
+    int lp_level;
+    // 卡牌等级
+
+    int lp_faction;
+    // 卡牌阵营（TPZ中立）
+
+    int lp_subfaction;
+    // 卡牌子阵营（泰伦人族，原始异虫，塔达林等等）
+
+    int lp_type;
+    // 卡牌类型，决定卡牌是原始卡牌，三连卡牌，被三连卡牌，虚空捏的牌等等
+
+    bool lp_canMerge;
+    // 卡牌能否三连
+
+    bool lp_isTemporary;
+    // 是否是临时创建的卡牌，虚空捏的卡不会返回卡池
+
+    bool lp_isMerged;
+    // 卡牌是否被三连合并到某个卡牌里
+
+    int[gc_CardMergeMax + 1] lp_mergedCardIds;
+    // 被合并到这个卡牌里的实例id
+
+    string[gc_UnitTypeMax + 1] lp_unitIds;
+    // 卡牌内单位的id，1-200为通常单位，201-210为特殊单位（科技挂件，水晶塔等）
+
+    int[gc_UnitTypeMax + 1] lp_unitAmounts;
+    // 对应单位的数量
+
+    int lp_cardTotalunitAmount;
+    // 卡牌内单位的总数量
+
+    int[gc_CardEffectMax + 1] lp_effectIds;
+    // 特效实例id表
+
+    int[gc_CardEffectMax + 1] lp_slotIds;
+    // 特效实例对应的slot
+};
+
+gs_CardInstance[gc_CardInstanceMax + 1] CardInstanceArray;
+
+//==================================================
+// Effect Instance 在游戏初始化及游戏中，可以创建，删除，修改效果实例并与之交互
+//==================================================
+struct gs_EffectInstance
+{
+    int lp_effectTemplateId;
+    // 效果模板ID，在游戏开始前由数据定义，通常与所在特效模板数组下标相同
+
+    int lp_effectInstanceId;
+    // 效果实例id
+
+    int lp_sourceCardInstanceId;
+    // 所属卡牌实例的id
+
+    int lp_ownerPlayerId;
+    // 所属玩家id
+
+    int lp_slotInstanceId;
+    // 该特效slotId
+
+    int lp_effectTypeId;
+    // 效果类型，主动效果与诱发效果，用于关联UI是按钮还是进度图标
+
+    int lp_listenEventId;
+    // 监听时点id
+
+    int lp_conditionFuncId;
+    // 发动条件判断函数id
+
+    int lp_costFuncId;
+    // cost支付函数id
+
+    int lp_targetSelectFuncId;
+    // 效果目标数组选择id
+
+    int lp_operationFuncId;
+    // 效果函数引用id
+
+    string[gc_EffectParamMax + 1] lp_paramArray;
+    // 额外参数表
+};
+
+gs_EffectInstance[gc_EffectInstanceMax + 1] EffectInstanceArray;
+
+// ==================================================
+// targetSelectResult 目标选择结果结构体，用于存储目标选择函数的操作结果
+// ==================================================
+
+struct gs_TargetSelectResult
+{
+    int lp_targetNum;
+    // 目标数量
+
+    int[gs_CardInstanceMax + 1] lp_targetCardInstanceIds;
+    // 目标卡牌实例id
+};
+
+gs_TargetSelectResult CurrentEffectTargetSelectResult;
+
+//==================================================
+// Store State 
+//==================================================
+
+int[gc_PlayerMax + 1][gc_PlayerHandCardMax + 1] gv_PlayerHandCardArray;
+// 玩家手牌数组，第一维是玩家id，第二维是玩家手牌槽位，值为卡牌实例id
+
+int[gc_PlayerMax + 1][gc_PlayerFieldCardMax + 1] gv_PlayerFieldCardArray;
+// 玩家场上卡牌数组，第一维是玩家id，第二维是玩家场上卡牌槽位，值为卡牌实例id
+
+int[gc_PlayerMax + 1] gv_PlayerStoreMaxNum;
+// 玩家商店陈列最大数量，第一维是玩家id，值为商店陈列最大数量
+
+int[gc_PlayerMax + 1][gc_PlayerStoreCardMax + 1] gv_PlayerStoreCardArray;
+// 玩家商店卡牌数组，第一维是玩家id，第二维是商店陈列槽位，值为卡牌实例id
