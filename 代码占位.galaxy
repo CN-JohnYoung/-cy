@@ -1,0 +1,54 @@
+//==================================================
+// Global Constants
+//==================================================
+
+const int gc_InvalidId = 0;
+
+const int gc_CardTemplateMax     = 500;
+const int gc_CardInstanceMax     = 1000;
+
+const int gc_EffectTemplateMax   = 1000;
+const int gc_EffectInstanceMax   = 4000;
+
+const int gc_SlotInstanceMax     = 4000;
+
+const int gc_CardEffectMax       = 16;
+
+const int gc_CardMergeMax        = 3;
+
+const int gc_UnitTypeMax         = 210;
+
+const int gc_SpecialUnitStart    = 201;
+
+const int gc_EffectLinkMax       = 8;
+
+const int gc_EffectParamMax      = 8;
+
+const int gc_SlotIntParamMax     = 8;
+
+const int gc_SlotStringParamMax  = 8;
+
+//==================================================
+// Effect Template
+//==================================================
+
+struct gs_EffectTemplate
+{
+    int lp_effectTemplateId;
+
+    int lp_effectTypeId;
+
+    int lp_listenEventId;
+
+    int lp_conditionFuncId;
+
+    int lp_costFuncId;
+
+    int lp_targetSelectFuncId;
+
+    int lp_operationFuncId;
+
+    int[gc_EffectLinkMax + 1] lp_linkedEffectTemplateIds;
+
+    string[gc_EffectParamMax + 1] lp_paramArray;
+};
