@@ -1,0 +1,117 @@
+//==================================================
+// Global Constants
+//==================================================
+
+const int gc_InvalidId = 0;
+
+const int gc_CardTemplateMax     = 500;
+// 卡牌模板上限
+
+const int gc_CardInstanceMax     = 1000;
+// 卡牌实例上限
+
+const int gc_EffectTemplateMax   = 1000;
+// 效果模板上限
+
+const int gc_EffectInstanceMax   = 4000;
+// 效果实例上限
+
+const int gc_SlotInstanceMax     = 4000;
+// 效果状态实例上限
+
+const int gc_CardEffectMax       = 16;
+// 每张卡牌的效果数量上限
+
+const int gc_CardMergeMax        = 3;
+// 每张卡牌的融合数量上限
+
+const int gc_UnitTypeMax         = 210;
+// 单位类型上限，单位类型ID从1开始，0为无效ID
+
+const int gc_SpecialUnitStart    = 201;
+// 特殊单位起始ID，特殊单位ID从201开始，200为普通单位上限
+
+const int gc_EffectLinkMax       = 8;
+// 效果链接数量上限，每个效果模板最多可以链接8个其他效果模板
+
+const int gc_EffectParamMax      = 8;
+// 额外效果参数数量上限，每个效果模板最多可以有8个参数
+
+const int gc_SlotIntParamMax     = 8;
+// 效果状态整数参数数量上限，每个效果状态实例最多可以有8个整数参数
+
+const int gc_SlotStringParamMax  = 8;
+// 效果状态字符串参数数量上限，每个效果状态实例最多可以有8个字符串参数
+
+//==================================================
+// Card Template
+//==================================================
+
+struct gs_CardTemplate
+{
+    int lp_templateId;
+    // 模板ID，在游戏开始前就被创建，通常与所在卡牌模板数组下标相同
+
+    string lp_cardName;
+    // 卡牌名称
+
+    int lp_level;
+    // 卡牌等级
+
+    int lp_faction;
+    // 卡牌阵营（TPZ中立）
+
+    int lp_subfaction;
+    // 卡牌子阵营（泰伦人族，原始异虫，塔达林等等）
+
+    int lp_type;
+    // 卡牌类型，决定卡牌是原始卡牌，三连卡牌，被三连卡牌，虚空捏的牌等等
+
+    bool lp_canMerge;
+    // 卡牌能否三连
+
+    int[gc_UnitTypeMax + 1] lp_unitIds;
+    // 卡牌内单位的id，1-200为通常单位，201-210为特殊单位（科技挂件，水晶塔等）
+
+    int[gc_UnitTypeMax + 1] lp_unitAmounts;
+    // 对应单位的数量
+
+    int[gc_CardEffectMax + 1] lp_effectIds;
+    // 特效模板id表
+};
+
+//==================================================
+// Effect Template
+//==================================================
+
+struct gs_EffectTemplate
+{
+    int lp_effectTemplateId;
+    // 效果模板ID，在游戏开始前就被创建，通常与所在效果模板数组下标相同
+
+    int lp_effectTypeId;
+    // 效果类型ID，决定效果的触发时机和执行时机
+
+    string lp_listenEvent;
+    // 效果监听的事件，决定效果会监听哪个事件来触发
+
+    int lp_conditionFuncId;
+    // 效果条件函数ID，决定效果触发时会调用哪个函数来判断是否满足触发条件
+
+    int lp_costFuncId;
+    // 效果费用函数ID，决定效果触发时会调用哪个函数来支付费用
+
+    int lp_targetSelectFuncId;
+    // 效果目标选择函数ID，决定效果触发时会调用哪个函数来选择目标
+
+    int lp_operationFuncId;
+    // 效果执行函数ID，决定效果触发时会调用哪个函数来执行效果
+
+    int[gc_EffectLinkMax + 1] lp_linkedEffectTemplateIds;
+    // 链接的效果模板ID表，决定效果会链接哪些其他效果模板
+
+    string[gc_EffectParamMax + 1] lp_paramArray;
+    // 额外效果参数表，效果模板可以通过这个表来存储一些额外的参数，以供条件函数、费用函数、目标选择函数和执行函数使用
+};
+
+//
