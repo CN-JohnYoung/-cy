@@ -1,0 +1,75 @@
+//==================================================
+// Card Unit Operations
+//==================================================
+
+// 给指定卡牌添加普通单位，若卡牌在场上则受玩家普通单位总数量上限限制
+void gf_OperationAddNormalUnitToCard(int lp_cardInstanceId, string lp_unitId, int lp_unitAmount)
+{
+    structref<gs_CardInstance> lv_cardInstance;
+    int lv_unitIndex;
+    int lv_ownerPlayerId;
+    int lv_addUnitAmount;
+    int lv_remainingUnitAmount;
+
+    lv_cardInstance = gv_CardInstanceArray[lp_cardInstanceId];
+    lv_addUnitAmount = lp_unitAmount;
+    lv_ownerPlayerId = gf_CardGetOwnerPlayerId(lp_cardInstanceId);
+    if (lv_ownerPlayerId != 0)
+    {
+        lv_remainingUnitAmount = gc_PlayerNormalUnitAmountMax - gf_PlayerGetFieldNormalUnitAmount(lv_ownerPlayerId);
+        if (lv_remainingUnitAmount <= 0)
+        {
+            return;
+        }
+
+        if (lv_addUnitAmount > lv_remainingUnitAmount)
+        {
+            lv_addUnitAmount = lv_remainingUnitAmount;
+        }
+    }
+
+    lv_unitIndex = gf_CardGetNormalUnitIndex(lp_cardInstanceId, lp_unitId);
+    if (lv_unitIndex != 0)
+    {
+        lv_cardInstance.lv_unitAmounts[lv_unitIndex] += lv_addUnitAmount;
+        lv_cardInstance.lv_cardTotalunitAmount += lv_addUnitAmount;
+        if (lv_ownerPlayerId != 0)
+        {
+            gv_PlayerCardUnitAmountArray[lv_ownerPlayerId] += lv_addUnitAmount;
+        }
+
+        return;
+    }
+
+    lv_unitIndex = gf_CardGetNormalUnitIndex(lp_cardInstanceId, "");
+    lv_cardInstance.lv_unitIds[lv_unitIndex] = lp_unitId;
+    lv_cardInstance.lv_unitAmounts[lv_unitIndex] = lv_addUnitAmount;
+    lv_cardInstance.lv_unitTypeAmount += 1;
+    lv_cardInstance.lv_cardTotalunitAmount += lv_addUnitAmount;
+    if (lv_ownerPlayerId != 0)
+    {
+        gv_PlayerCardUnitAmountArray[lv_ownerPlayerId] += lv_addUnitAmount;
+    }
+}
+
+// 给指定卡牌添加特殊单位，不受玩家普通单位总数量上限限制
+void gf_OperationAddSpecialUnitToCard(int lp_cardInstanceId, string lp_unitId, int lp_unitAmount)
+{
+    structref<gs_CardInstance> lv_cardInstance;
+    int lv_unitIndex;
+
+    lv_cardInstance = gv_CardInstanceArray[lp_cardInstanceId];
+    lv_unitIndex = gf_CardGetSpecialUnitIndex(lp_cardInstanceId, lp_unitId);
+    if (lv_unitIndex != 0)
+    {
+        lv_cardInstance.lv_unitAmounts[lv_unitIndex] += lp_unitAmount;
+        lv_cardInstance.lv_cardTotalunitAmount += lp_unitAmount;
+        return;
+    }
+
+    lv_unitIndex = gf_CardGetSpecialUnitIndex(lp_cardInstanceId, "");
+    lv_cardInstance.lv_unitIds[lv_unitIndex] = lp_unitId;
+    lv_cardInstance.lv_unitAmounts[lv_unitIndex] = lp_unitAmount;
+    lv_cardInstance.lv_specialUnitTypeAmount += 1;
+    lv_cardInstance.lv_cardTotalunitAmount += lp_unitAmount;
+}

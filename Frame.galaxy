@@ -1,8 +1,6 @@
-//==================================================
+﻿//==================================================
 // Global Constants
 //==================================================
-
-const int gc_InvalidId = 0;
 
 const int gc_PlayerMax           = 8;
 // 玩家数量上限，玩家ID从1开始，0为无效ID
@@ -37,11 +35,17 @@ const int gc_CardEffectMax       = 16;
 const int gc_CardMergeMax        = 3;
 // 每张卡牌的融合数量上限
 
-const int gc_UnitTypeMax         = 210;
+const int gc_NormalUnitTypeMax   = 200;
+// 普通单位类型数量，普通单位ID从1开始
+
+const int gc_SpecialUnitTypeMax  = 10;
+// 特殊单位类型数量
+
+const int gc_UnitTypeMax         = gc_NormalUnitTypeMax + gc_SpecialUnitTypeMax;
 // 单位类型上限，单位类型ID从1开始，0为无效ID
 
-const int gc_SpecialUnitStart    = 201;
-// 特殊单位起始ID，特殊单位ID从201开始，200为普通单位上限
+const int gc_SpecialUnitStart    = gc_NormalUnitTypeMax + 1;
+// 特殊单位起始ID
 
 const int gc_EffectLinkMax       = 8;
 // 效果链接数量上限，每个效果模板最多可以链接8个其他效果模板
@@ -55,44 +59,134 @@ const int gc_SlotIntParamMax     = 8;
 const int gc_SlotStringParamMax  = 8;
 // 效果状态字符串参数数量上限，每个效果状态实例最多可以有8个字符串参数
 
+const int gc_PlayerNormalUnitAmountMax = 100;
+// 玩家场上所有卡牌普通单位总数量上限
+
 //==================================================
 // Card Template
 //==================================================
 
 struct gs_CardTemplate
 {
-    int lp_templateId;
+    int lv_templateId;
     // 模板ID，在游戏开始前就被创建，通常与所在卡牌模板数组下标相同
 
-    string lp_cardName;
+    string lv_cardName;
     // 卡牌名称
 
-    int lp_level;
+    int lv_level;
     // 卡牌等级
 
-    int lp_faction;
+    int lv_faction;
     // 卡牌阵营（TPZ中立）
 
-    int lp_subfaction;
+    int lv_subfaction;
     // 卡牌子阵营（泰伦人族，原始异虫，塔达林等等）
 
-    int lp_type;
+    int lv_State;
     // 卡牌类型，决定卡牌是原始卡牌，三连卡牌，被三连卡牌，虚空捏的牌等等
 
-    bool lp_canMerge;
+    int lv_ownerPlayerId;
+    // 卡牌所属玩家id，0为无所属玩家
+
+    bool lv_canMerge;
     // 卡牌能否三连
 
-    string[gc_UnitTypeMax + 1] lp_unitIds;
-    // 卡牌内单位的id，1-200为通常单位，201-210为特殊单位（科技挂件，水晶塔等）
+    int lv_unitTypeAmount;
+    // 卡牌内单位的种类数量
 
-    int[gc_UnitTypeMax + 1] lp_unitAmounts;
+    int lv_specialUnitTypeAmount;
+    // 卡牌内特殊单位的种类数量
+
+    string[gc_UnitTypeMax + 1] lv_unitIds;
+    // 卡牌内单位的id，1-gc_NormalUnitTypeMax为通常单位，gc_SpecialUnitStart-gc_UnitTypeMax为特殊单位（科技挂件，水晶塔等）,初始化时每个成员都是“”
+
+    int[gc_UnitTypeMax + 1] lv_unitAmounts;
     // 对应单位的数量
 
-    int[gc_CardEffectMax + 1] lp_effectIds;
+    int lv_effectAmount;
+    // 卡牌效果数量
+
+    int[gc_CardEffectMax + 1] lv_effectIds;
     // 特效模板id表
 };
 
-gs_CardTemplate[gc_CardTemplateMax + 1] CardTemplateArray;
+gs_CardTemplate[gc_CardTemplateMax + 1] gv_CardTemplateArray;
+
+//==================================================
+// Card Instance 在游戏初始化及游戏中，可以创建，删除，修改卡牌实例并与之交互
+//==================================================
+
+struct gs_CardInstance
+{
+    int lv_instanceId;
+    // 实例ID，在游戏初始化时及游戏时被创建
+
+    int lv_templateId;
+    // 模板ID，指向卡牌模板，决定卡牌的基本属性和效果
+
+    bool lv_isActivated;
+    // 卡牌是否被激活,当实例被销毁时会重置为false
+
+    string lv_cardName;
+    // 卡牌名称
+
+    int lv_level;
+    // 卡牌等级
+
+    int lv_faction;
+    // 卡牌阵营（TPZ中立）
+
+    int lv_subfaction;
+    // 卡牌子阵营（泰伦人族，原始异虫，塔达林等等）
+
+    int lv_StateId;
+    // 卡牌类型，决定卡牌是原始卡牌，三连卡牌，被三连卡牌，虚空捏的牌等等
+
+    int lv_ZoneId;
+    // 卡牌所在区域，手牌/场上/商店
+
+    int lv_ownerPlayerId;
+    // 卡牌所属玩家id，0为无所属玩家
+
+    bool lv_canMerge;
+    // 卡牌能否三连
+
+    bool lv_isTemporary;
+    // 是否是临时创建的卡牌，虚空捏的卡不会返回卡池
+
+    bool lv_isMerged;
+    // 卡牌是否被三连合并到某个卡牌里
+
+    int[gc_CardMergeMax + 1] lv_mergedCardIds;
+    // 被合并到这个卡牌里的实例id
+
+    int lv_unitTypeAmount;
+    // 卡牌内单位的种类数量
+
+    int lv_specialUnitTypeAmount;
+    // 卡牌内特殊单位的种类数量
+
+    string[gc_UnitTypeMax + 1] lv_unitIds;
+    // 卡牌内单位的id，1-gc_NormalUnitTypeMax为通常单位，gc_SpecialUnitStart-gc_UnitTypeMax为特殊单位（科技挂件，水晶塔等）
+
+    int[gc_UnitTypeMax + 1] lv_unitAmounts;
+    // 对应单位的数量
+
+    int lv_cardTotalunitAmount;
+    // 卡牌内单位的总数量
+
+    int lv_effectAmount;
+    // 卡牌效果数量
+
+    int[gc_CardEffectMax + 1] lv_effectIds;
+    // 特效实例id表
+
+    int[gc_CardEffectMax + 1] lv_slotIds;
+    // 特效实例对应的slot
+};
+
+gs_CardInstance[gc_CardInstanceMax + 1] gv_CardInstanceArray;
 
 //==================================================
 // Effect Template
@@ -100,41 +194,41 @@ gs_CardTemplate[gc_CardTemplateMax + 1] CardTemplateArray;
 
 struct gs_EffectTemplate
 {
-    int lp_effectTemplateId;
+    int lv_effectTemplateId;
     // 效果模板ID，在游戏开始前就被创建，通常与所在效果模板数组下标相同
 
-    int lp_effectTypeId;
+    int lv_effectTypeId;
     // 效果类型ID，决定效果的触发时机和执行时机
 
-    int lp_activeStateId;
+    int lv_activeStateId;
     // 该效果在卡牌处于何种状态时激活，普通/金色/红色
 
-    int lp_activeZoneId;
+    int lv_activeZoneId;
     // 该效果在卡牌处于哪个区域时激活，手牌/场上/商店
 
-    string lp_listenEvent;
+    string lv_listenEvent;
     // 效果监听的事件，决定效果会监听哪个事件来触发
 
-    int lp_conditionFuncId;
+    int lv_conditionFuncId;
     // 效果条件函数ID，决定效果触发时会调用哪个函数来判断是否满足触发条件
 
-    int lp_costFuncId;
+    int lv_costFuncId;
     // 效果费用函数ID，决定效果触发时会调用哪个函数来支付费用
 
-    int lp_targetSelectFuncId;
+    int lv_targetSelectFuncId;
     // 效果目标选择函数ID，决定效果触发时会调用哪个函数来选择目标
 
-    int lp_operationFuncId;
+    int lv_operationFuncId;
     // 效果执行函数ID，决定效果触发时会调用哪个函数来执行效果
 
-    int[gc_EffectLinkMax + 1] lp_linkedEffectTemplateIds;
+    int[gc_EffectLinkMax + 1] lv_linkedEffectTemplateIds;
     // 链接的效果模板ID表，决定效果会链接哪些其他效果模板
 
-    string[gc_EffectParamMax + 1] lp_paramArray;
+    string[gc_EffectParamMax + 1] lv_paramArray;
     // 额外效果参数表，效果模板可以通过这个表来存储一些额外的参数，以供条件函数、费用函数、目标选择函数和执行函数使用
 };
 
-gs_EffectTemplate[gc_EffectTemplateMax + 1] EffectTemplateArray;
+gs_EffectTemplate[gc_EffectTemplateMax + 1] gv_EffectTemplateArray;
 
 //==================================================
 // Slot Instance 记录某个或某些特效的状态参数。
@@ -143,100 +237,43 @@ gs_EffectTemplate[gc_EffectTemplateMax + 1] EffectTemplateArray;
 
 struct gs_SlotInstance
 {
-    int lp_ownerCardInstanceId;
+    int lv_ownerCardInstanceId;
     // 所属卡牌实例的id
 
-    int lp_ownerPlayerId;
+    int lv_ownerPlayerId;
     // 所属玩家id
 
-    int[gc_SlotIntParamMax + 1] lp_slotIntParameters;
+    int[gc_SlotIntParamMax + 1] lv_slotIntParameters;
     // 记录数值型的状态参数
 
-    string[gc_SlotStringParamMax + 1] lp_slotStringParameters;
+    string[gc_SlotStringParamMax + 1] lv_slotStringParameters;
     // 记录字符型的状态参数
 };
 
-gs_SlotInstance[gc_SlotInstanceMax + 1] SlotInstanceArray;
-
-//==================================================
-// Card Instance 在游戏初始化及游戏中，可以创建，删除，修改卡牌实例并与之交互
-//==================================================
-
-struct gs_CardInstance
-{
-    int lp_instanceId;
-    // 实例ID，在游戏初始化时及游戏时被创建
-
-    int lp_templateId;
-    // 模板ID，指向卡牌模板，决定卡牌的基本属性和效果
-
-    string lp_cardName;
-    // 卡牌名称
-
-    int lp_level;
-    // 卡牌等级
-
-    int lp_faction;
-    // 卡牌阵营（TPZ中立）
-
-    int lp_subfaction;
-    // 卡牌子阵营（泰伦人族，原始异虫，塔达林等等）
-
-    int lp_type;
-    // 卡牌类型，决定卡牌是原始卡牌，三连卡牌，被三连卡牌，虚空捏的牌等等
-
-    bool lp_canMerge;
-    // 卡牌能否三连
-
-    bool lp_isTemporary;
-    // 是否是临时创建的卡牌，虚空捏的卡不会返回卡池
-
-    bool lp_isMerged;
-    // 卡牌是否被三连合并到某个卡牌里
-
-    int[gc_CardMergeMax + 1] lp_mergedCardIds;
-    // 被合并到这个卡牌里的实例id
-
-    string[gc_UnitTypeMax + 1] lp_unitIds;
-    // 卡牌内单位的id，1-200为通常单位，201-210为特殊单位（科技挂件，水晶塔等）
-
-    int[gc_UnitTypeMax + 1] lp_unitAmounts;
-    // 对应单位的数量
-
-    int lp_cardTotalunitAmount;
-    // 卡牌内单位的总数量
-
-    int[gc_CardEffectMax + 1] lp_effectIds;
-    // 特效实例id表
-
-    int[gc_CardEffectMax + 1] lp_slotIds;
-    // 特效实例对应的slot
-};
-
-gs_CardInstance[gc_CardInstanceMax + 1] CardInstanceArray;
+gs_SlotInstance[gc_SlotInstanceMax + 1] gv_SlotInstanceArray;
 
 //==================================================
 // Effect Instance 在游戏初始化及游戏中，可以创建，删除，修改效果实例并与之交互
 //==================================================
 struct gs_EffectInstance
 {
-    int lp_effectTemplateId;
+    int lv_effectTemplateId;
     // 效果模板ID，在游戏开始前由数据定义，通常与所在特效模板数组下标相同
 
-    int lp_effectInstanceId;
+    int lv_effectInstanceId;
     // 效果实例id
 
-    int lp_sourceCardInstanceId;
+    int lv_sourceCardInstanceId;
     // 所属卡牌实例的id
 
-    int lp_ownerPlayerId;
+    int lv_ownerPlayerId;
     // 所属玩家id
 
-    int lp_slotInstanceId;
+    int lv_slotInstanceId;
     // 该特效slotId
 };
 
-gs_EffectInstance[gc_EffectInstanceMax + 1] EffectInstanceArray;
+gs_EffectInstance[gc_EffectInstanceMax + 1] gv_EffectInstanceArray;
 
 // ==================================================
 // targetSelectResult 目标选择结果结构体，用于存储目标选择函数的操作结果
@@ -244,14 +281,14 @@ gs_EffectInstance[gc_EffectInstanceMax + 1] EffectInstanceArray;
 
 struct gs_TargetSelectResult
 {
-    int lp_targetNum;
+    int lv_targetNum;
     // 目标数量
 
-    int[gc_CardInstanceMax + 1] lp_targetCardInstanceIds;
+    int[gc_CardInstanceMax + 1] lv_targetCardInstanceIds;
     // 目标卡牌实例id
 };
 
-gs_TargetSelectResult CurrentEffectTargetSelectResult;
+gs_TargetSelectResult gv_CurrentEffectTargetSelectResult;
 
 //==================================================
 // Store State 
@@ -275,18 +312,36 @@ int[gc_PlayerMax + 1][gc_PlayerStoreCardMax + 1] gv_PlayerStoreCardArray;
 
 struct gs_EventContext
 {
-    int lp_eventId;
-    int lp_effectInstanceId;
-    int lp_slotInstanceId;
+    int lv_eventId;
+    // 事件id
+    int lv_effectInstanceId;
+    // 事件相关的效果实例id
+    int lv_slotInstanceId;
+    // 事件相关的效果状态实例id
 
-    int lp_sourceCardId;
+    int lv_sourceCardId;
+    // 事件相关的卡牌实例id
 
-    int lp_targetCardCount;
-    int[gc_CardTargetMax + 1] lp_targetCardIdArray;
+    int lv_targetCardCount;
+    // 事件相关的目标卡牌数量
+    int[gc_CardTargetMax + 1] lv_targetCardIdArray;
+    // 事件相关的目标卡牌实例id数组
 
-    int lp_sourcePlayerId;
-    int lp_targetPlayerId;
+    int lv_sourcePlayerId;
+    // 事件相关的来源玩家id
+    int lv_targetPlayerId;
+    // 事件相关的目标玩家id
 
-    int[gc_EventIntParamMax + 1] lp_intParamArray;
-    string[gc_EventStringParamMax + 1] lp_stringParamArray;
+    int lv_intParamNum;
+    // 事件相关的整数参数数量
+
+    int lv_stringParamNum;
+    // 事件相关的字符串参数数量
+
+    int[gc_EventIntParamMax + 1] lv_intParamArray;
+    // 事件相关的整数参数数组，事件触发时可以传递一些整数参数，以供事件处理函数使用
+    string[gc_EventStringParamMax + 1] lv_stringParamArray;
+    // 事件相关的字符串参数数组，事件触发时可以传递一些字符串参数，以供事件处理函数使用
 };
+
+gs_EventContext gv_CurrentEventContext;

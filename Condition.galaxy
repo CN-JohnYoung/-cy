@@ -1,0 +1,9 @@
+//==================================================
+// ConditionFuncList 
+//==================================================
+
+// 判断当前事件来源卡牌内是否具有反应堆
+bool gf_ConditionSelfCardHasReactor()
+{
+    return gf_CardGetSpecialUnitAmount(gv_CurrentEventContext.lv_sourceCardId, gc_Addon_Reactor) > 0;
+}
