@@ -1,9 +1,87 @@
 //==================================================
-// Card Unit Functions
+// Card Template Unit Functions
 //==================================================
 
-// 获取卡牌内普通单位的数组下标，找不到时返回0
-int gf_CardGetNormalUnitIndex(int lp_cardInstanceId, string lp_unitId)
+// 获取卡牌模板内普通单位的数组下标，找不到时返回0
+int gf_CardTemplateGetNormalUnitIndex(int lp_cardTemplateId, string lp_unitId)
+{
+    structref<gs_CardTemplate> lv_cardTemplate;
+    int lv_unitIndex;
+
+    lv_cardTemplate = gv_CardTemplateArray[lp_cardTemplateId];
+    lv_unitIndex = 1;
+    while (lv_unitIndex <= gc_NormalUnitTypeMax)
+    {
+        if (lv_cardTemplate.lv_unitIds[lv_unitIndex] == lp_unitId)
+        {
+            return lv_unitIndex;
+        }
+
+        lv_unitIndex += 1;
+    }
+
+    return 0;
+}
+
+// 获取卡牌模板内特殊单位的数组下标，找不到时返回0
+int gf_CardTemplateGetSpecialUnitIndex(int lp_cardTemplateId, string lp_unitId)
+{
+    structref<gs_CardTemplate> lv_cardTemplate;
+    int lv_unitIndex;
+
+    lv_cardTemplate = gv_CardTemplateArray[lp_cardTemplateId];
+    lv_unitIndex = gc_SpecialUnitStart;
+    while (lv_unitIndex <= gc_UnitTypeMax)
+    {
+        if (lv_cardTemplate.lv_unitIds[lv_unitIndex] == lp_unitId)
+        {
+            return lv_unitIndex;
+        }
+
+        lv_unitIndex += 1;
+    }
+
+    return 0;
+}
+
+// 获取卡牌模板内普通单位的数量，找不到时返回0
+int gf_CardTemplateGetNormalUnitAmount(int lp_cardTemplateId, string lp_unitId)
+{
+    structref<gs_CardTemplate> lv_cardTemplate;
+    int lv_unitIndex;
+
+    lv_cardTemplate = gv_CardTemplateArray[lp_cardTemplateId];
+    lv_unitIndex = gf_CardTemplateGetNormalUnitIndex(lp_cardTemplateId, lp_unitId);
+    if (lv_unitIndex != 0)
+    {
+        return lv_cardTemplate.lv_unitAmounts[lv_unitIndex];
+    }
+
+    return 0;
+}
+
+// 获取卡牌模板内特殊单位的数量，找不到时返回0
+int gf_CardTemplateGetSpecialUnitAmount(int lp_cardTemplateId, string lp_unitId)
+{
+    structref<gs_CardTemplate> lv_cardTemplate;
+    int lv_unitIndex;
+
+    lv_cardTemplate = gv_CardTemplateArray[lp_cardTemplateId];
+    lv_unitIndex = gf_CardTemplateGetSpecialUnitIndex(lp_cardTemplateId, lp_unitId);
+    if (lv_unitIndex != 0)
+    {
+        return lv_cardTemplate.lv_unitAmounts[lv_unitIndex];
+    }
+
+    return 0;
+}
+
+//==================================================
+// Card Instance Unit Functions
+//==================================================
+
+// 获取卡牌实例内普通单位的数组下标，找不到时返回0
+int gf_CardInstanceGetNormalUnitIndex(int lp_cardInstanceId, string lp_unitId)
 {
     structref<gs_CardInstance> lv_cardInstance;
     int lv_unitIndex;
@@ -23,8 +101,8 @@ int gf_CardGetNormalUnitIndex(int lp_cardInstanceId, string lp_unitId)
     return 0;
 }
 
-// 获取卡牌内特殊单位的数组下标，找不到时返回0
-int gf_CardGetSpecialUnitIndex(int lp_cardInstanceId, string lp_unitId)
+// 获取卡牌实例内特殊单位的数组下标，找不到时返回0
+int gf_CardInstanceGetSpecialUnitIndex(int lp_cardInstanceId, string lp_unitId)
 {
     structref<gs_CardInstance> lv_cardInstance;
     int lv_unitIndex;
@@ -44,14 +122,14 @@ int gf_CardGetSpecialUnitIndex(int lp_cardInstanceId, string lp_unitId)
     return 0;
 }
 
-// 获取卡牌内普通单位的数量，找不到时返回0
-int gf_CardGetNormalUnitAmount(int lp_cardInstanceId, string lp_unitId)
+// 获取卡牌实例内普通单位的数量，找不到时返回0
+int gf_CardInstanceGetNormalUnitAmount(int lp_cardInstanceId, string lp_unitId)
 {
     structref<gs_CardInstance> lv_cardInstance;
     int lv_unitIndex;
 
     lv_cardInstance = gv_CardInstanceArray[lp_cardInstanceId];
-    lv_unitIndex = gf_CardGetNormalUnitIndex(lp_cardInstanceId, lp_unitId);
+    lv_unitIndex = gf_CardInstanceGetNormalUnitIndex(lp_cardInstanceId, lp_unitId);
     if (lv_unitIndex != 0)
     {
         return lv_cardInstance.lv_unitAmounts[lv_unitIndex];
@@ -60,14 +138,14 @@ int gf_CardGetNormalUnitAmount(int lp_cardInstanceId, string lp_unitId)
     return 0;
 }
 
-// 获取卡牌内特殊单位的数量，找不到时返回0
-int gf_CardGetSpecialUnitAmount(int lp_cardInstanceId, string lp_unitId)
+// 获取卡牌实例内特殊单位的数量，找不到时返回0
+int gf_CardInstanceGetSpecialUnitAmount(int lp_cardInstanceId, string lp_unitId)
 {
     structref<gs_CardInstance> lv_cardInstance;
     int lv_unitIndex;
 
     lv_cardInstance = gv_CardInstanceArray[lp_cardInstanceId];
-    lv_unitIndex = gf_CardGetSpecialUnitIndex(lp_cardInstanceId, lp_unitId);
+    lv_unitIndex = gf_CardInstanceGetSpecialUnitIndex(lp_cardInstanceId, lp_unitId);
     if (lv_unitIndex != 0)
     {
         return lv_cardInstance.lv_unitAmounts[lv_unitIndex];
@@ -76,8 +154,8 @@ int gf_CardGetSpecialUnitAmount(int lp_cardInstanceId, string lp_unitId)
     return 0;
 }
 
-// 获取卡牌归属玩家id
-int gf_CardGetOwnerPlayerId(int lp_cardInstanceId)
+// 获取卡牌实例归属玩家id
+int gf_CardInstanceGetOwnerPlayerId(int lp_cardInstanceId)
 {
     return gv_CardInstanceArray[lp_cardInstanceId].lv_ownerPlayerId;
 }
@@ -85,5 +163,5 @@ int gf_CardGetOwnerPlayerId(int lp_cardInstanceId)
 // 获取玩家场上所有卡牌的普通单位总数量
 int gf_PlayerGetFieldNormalUnitAmount(int lp_playerId)
 {
-    return gv_PlayerCardUnitAmountArray[lp_playerId];
+    return gv_PlayerFieldNormalUnitAmount[lp_playerId];
 }

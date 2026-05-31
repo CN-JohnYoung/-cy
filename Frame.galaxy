@@ -1,4 +1,4 @@
-﻿//==================================================
+//==================================================
 // Global Constants
 //==================================================
 
@@ -85,9 +85,6 @@ struct gs_CardTemplate
 
     int lv_State;
     // 卡牌类型，决定卡牌是原始卡牌，三连卡牌，被三连卡牌，虚空捏的牌等等
-
-    int lv_ownerPlayerId;
-    // 卡牌所属玩家id，0为无所属玩家
 
     bool lv_canMerge;
     // 卡牌能否三连
@@ -299,6 +296,9 @@ int[gc_PlayerMax + 1][gc_PlayerHandCardMax + 1] gv_PlayerHandCardArray;
 
 int[gc_PlayerMax + 1][gc_PlayerFieldCardMax + 1] gv_PlayerFieldCardArray;
 // 玩家场上卡牌数组，第一维是玩家id，第二维是玩家场上卡牌槽位，值为卡牌实例id
+
+int[gc_PlayerMax + 1] gv_PlayerFieldNormalUnitAmount;
+// 玩家场上普通单位总数量，第一维是玩家id，值为玩家场上所有卡牌的普通单位总数量
 
 int[gc_PlayerMax + 1] gv_PlayerStoreMaxNum;
 // 玩家商店陈列最大数量，第一维是玩家id，值为商店陈列最大数量
