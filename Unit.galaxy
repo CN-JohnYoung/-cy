@@ -1,0 +1,7 @@
+//==================================================
+// Constant definitions for units 
+//==================================================
+
+const string gc_Addon_Reactor = "addon_reactor";
+const string gc_Addon_TechLab = "addon_techlab";
+const string gc_Addon_AdvancedTechLab = "addon_advanced_techlab";

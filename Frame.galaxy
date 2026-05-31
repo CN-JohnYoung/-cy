@@ -268,3 +268,25 @@ int[gc_PlayerMax + 1] gv_PlayerStoreMaxNum;
 
 int[gc_PlayerMax + 1][gc_PlayerStoreCardMax + 1] gv_PlayerStoreCardArray;
 // 玩家商店卡牌数组，第一维是玩家id，第二维是商店陈列槽位，值为卡牌实例id
+
+//==================================================
+// Event Context 事件上下文结构体，用于存储事件触发时的相关信息，以供事件处理函数使用
+//==================================================
+
+struct gs_EventContext
+{
+    int lp_eventId;
+    int lp_effectInstanceId;
+    int lp_slotInstanceId;
+
+    int lp_sourceCardId;
+
+    int lp_targetCardCount;
+    int[gc_CardTargetMax + 1] lp_targetCardIdArray;
+
+    int lp_sourcePlayerId;
+    int lp_targetPlayerId;
+
+    int[gc_EventIntParamMax + 1] lp_intParamArray;
+    string[gc_EventStringParamMax + 1] lp_stringParamArray;
+};
