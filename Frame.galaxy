@@ -106,6 +106,12 @@ struct gs_EffectTemplate
     int lp_effectTypeId;
     // 效果类型ID，决定效果的触发时机和执行时机
 
+    int lp_activeStateId;
+    // 该效果在卡牌处于何种状态时激活，普通/金色/红色
+
+    int lp_activeZoneId;
+    // 该效果在卡牌处于哪个区域时激活，手牌/场上/商店
+
     string lp_listenEvent;
     // 效果监听的事件，决定效果会监听哪个事件来触发
 
@@ -143,10 +149,10 @@ struct gs_SlotInstance
     int lp_ownerPlayerId;
     // 所属玩家id
 
-    int[gc_SlotIntParamMax + 1] lp_slotParameters;
+    int[gc_SlotIntParamMax + 1] lp_slotIntParameters;
     // 记录数值型的状态参数
 
-    string[gc_SlotStringParamMax + 1] lp_slotParameters;
+    string[gc_SlotStringParamMax + 1] lp_slotStringParameters;
     // 记录字符型的状态参数
 };
 
@@ -228,27 +234,6 @@ struct gs_EffectInstance
 
     int lp_slotInstanceId;
     // 该特效slotId
-
-    int lp_effectTypeId;
-    // 效果类型，主动效果与诱发效果，用于关联UI是按钮还是进度图标
-
-    int lp_listenEventId;
-    // 监听时点id
-
-    int lp_conditionFuncId;
-    // 发动条件判断函数id
-
-    int lp_costFuncId;
-    // cost支付函数id
-
-    int lp_targetSelectFuncId;
-    // 效果目标数组选择id
-
-    int lp_operationFuncId;
-    // 效果函数引用id
-
-    string[gc_EffectParamMax + 1] lp_paramArray;
-    // 额外参数表
 };
 
 gs_EffectInstance[gc_EffectInstanceMax + 1] EffectInstanceArray;
@@ -262,7 +247,7 @@ struct gs_TargetSelectResult
     int lp_targetNum;
     // 目标数量
 
-    int[gs_CardInstanceMax + 1] lp_targetCardInstanceIds;
+    int[gc_CardInstanceMax + 1] lp_targetCardInstanceIds;
     // 目标卡牌实例id
 };
 
