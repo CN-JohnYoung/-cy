@@ -26,6 +26,12 @@ const int gc_EffectTemplateMax   = 1000;
 const int gc_EffectInstanceMax   = 4000;
 // 效果实例上限
 
+const int gc_CardEffectTemplateMax = 1000;
+// 卡牌效果模板上限
+
+const int gc_CardEffectInstanceMax = 4000;
+// 卡牌效果实例上限
+
 const int gc_SlotInstanceMax     = 4000;
 // 效果状态实例上限
 
@@ -47,11 +53,14 @@ const int gc_UnitTypeMax         = gc_NormalUnitTypeMax + gc_SpecialUnitTypeMax;
 const int gc_SpecialUnitStart    = gc_NormalUnitTypeMax + 1;
 // 特殊单位起始ID
 
-const int gc_EffectLinkMax       = 8;
-// 效果链接数量上限，每个效果模板最多可以链接8个其他效果模板
+const int gc_CardEffectGroupEffectMax = 8;
+// 每个卡牌效果模板中最多可以组装8个效果实例
 
-const int gc_EffectParamMax      = 8;
-// 额外效果参数数量上限，每个效果模板最多可以有8个参数
+const int gc_EffectIntParamMax   = 8;
+// 效果整数参数数量上限，每个效果实例最多可以有8个整数参数
+
+const int gc_EffectStringParamMax = 8;
+// 效果字符串参数数量上限，每个效果实例最多可以有8个字符串参数
 
 const int gc_SlotIntParamMax     = 8;
 // 效果状态整数参数数量上限，每个效果状态实例最多可以有8个整数参数
@@ -101,11 +110,11 @@ struct gs_CardTemplate
     int[gc_UnitTypeMax + 1] lv_unitAmounts;
     // 对应单位的数量
 
-    int lv_effectAmount;
+    int lv_cardEffectTemplateAmount;
     // 卡牌效果数量
 
-    int[gc_CardEffectMax + 1] lv_effectIds;
-    // 特效模板id表
+    int[gc_CardEffectMax + 1] lv_cardEffectTemplateIds;
+    // 卡牌效果模板id表
 };
 
 gs_CardTemplate[gc_CardTemplateMax + 1] gv_CardTemplateArray;
@@ -173,14 +182,11 @@ struct gs_CardInstance
     int lv_cardTotalunitAmount;
     // 卡牌内单位的总数量
 
-    int lv_effectAmount;
-    // 卡牌效果数量
+    int lv_cardEffectInstanceAmount;
+    // 卡牌效果实例数量
 
-    int[gc_CardEffectMax + 1] lv_effectIds;
-    // 特效实例id表
-
-    int[gc_CardEffectMax + 1] lv_slotIds;
-    // 特效实例对应的slot
+    int[gc_CardEffectMax + 1] lv_cardEffectInstanceIds;
+    // 挂载到本卡牌上的卡牌效果实例id表
 };
 
 gs_CardInstance[gc_CardInstanceMax + 1] gv_CardInstanceArray;
@@ -197,12 +203,6 @@ struct gs_EffectTemplate
     int lv_effectTypeId;
     // 效果类型ID，决定效果的触发时机和执行时机
 
-    int lv_activeStateId;
-    // 该效果在卡牌处于何种状态时激活，普通/金色/红色
-
-    int lv_activeZoneId;
-    // 该效果在卡牌处于哪个区域时激活，手牌/场上/商店
-
     string lv_listenEvent;
     // 效果监听的事件，决定效果会监听哪个事件来触发
 
@@ -217,28 +217,109 @@ struct gs_EffectTemplate
 
     int lv_operationFuncId;
     // 效果执行函数ID，决定效果触发时会调用哪个函数来执行效果
-
-    int[gc_EffectLinkMax + 1] lv_linkedEffectTemplateIds;
-    // 链接的效果模板ID表，决定效果会链接哪些其他效果模板
-
-    string[gc_EffectParamMax + 1] lv_paramArray;
-    // 额外效果参数表，效果模板可以通过这个表来存储一些额外的参数，以供条件函数、费用函数、目标选择函数和执行函数使用
 };
 
 gs_EffectTemplate[gc_EffectTemplateMax + 1] gv_EffectTemplateArray;
 
 //==================================================
-// Slot Instance 记录某个或某些特效的状态参数。
-// 每当一个特效被实例化。都会链接到一个Slot Instance来记录这个特效的状态参数，以供后续的条件函数、费用函数、目标选择函数和执行函数使用。
+// Effect Instance
+//==================================================
+struct gs_EffectInstance
+{
+    int lv_effectInstanceId;
+    // 效果实例id
+
+    int lv_effectTemplateId;
+    // 效果模板ID，决定该实例使用哪套 event-condition-target-cost-operation 逻辑
+
+    int[gc_EffectIntParamMax + 1] lv_intParamArray;
+    // 整数效果参数表，为效果模板中的 N 等数值参数提供具体值
+
+    string[gc_EffectStringParamMax + 1] lv_stringParamArray;
+    // 字符串效果参数表，为效果模板中的 X、Y 等id参数提供具体值
+};
+
+gs_EffectInstance[gc_EffectInstanceMax + 1] gv_EffectInstanceArray;
+
+//==================================================
+// Card Effect Template
+//==================================================
+struct gs_CardEffectTemplate
+{
+    int lv_cardEffectTemplateId;
+    // 卡牌效果模板id
+
+    int lv_effectInstanceAmount;
+    // 该卡牌效果模板中组装的效果实例数量
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_effectInstanceIds;
+    // 组内效果实例id表
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_logicSlotIds;
+    // 组内逻辑slot标识，0为非法；相同逻辑slot会在挂载时映射到同一个真实SlotInstance
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_activeZoneIds;
+    // 组内每个效果实例生效的区域id，0为非法
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_activeStateIds;
+    // 组内每个效果实例生效的卡牌状态id，0为非法
+};
+
+gs_CardEffectTemplate[gc_CardEffectTemplateMax + 1] gv_CardEffectTemplateArray;
+
+//==================================================
+// Card Effect Instance
+//==================================================
+struct gs_CardEffectInstance
+{
+    int lv_cardEffectInstanceId;
+    // 卡牌效果实例id
+
+    int lv_cardEffectTemplateId;
+    // 来源卡牌效果模板id
+
+    int lv_ownerCardInstanceId;
+    // 所属卡牌实例id
+
+    int lv_ownerPlayerId;
+    // 所属玩家id
+
+    int lv_effectInstanceAmount;
+    // 展开后的效果实例数量
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_effectInstanceIds;
+    // 展开后的效果实例id表
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_slotInstanceIds;
+    // 每个效果实例对应的真实slot实例id
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_activeZoneIds;
+    // 每个效果实例生效的区域id
+
+    int[gc_CardEffectGroupEffectMax + 1] lv_activeStateIds;
+    // 每个效果实例生效的卡牌状态id
+};
+
+gs_CardEffectInstance[gc_CardEffectInstanceMax + 1] gv_CardEffectInstanceArray;
+
+//==================================================
+// Slot Instance 记录某个卡牌效果逻辑slot的状态参数。
+// CardEffectInstance 会把 CardEffectTemplate 中的 logicSlotId 映射为真实 SlotInstance。
 //==================================================
 
 struct gs_SlotInstance
 {
+    int lv_ownerCardEffectInstanceId;
+    // 所属卡牌效果实例的id
+
     int lv_ownerCardInstanceId;
     // 所属卡牌实例的id
 
     int lv_ownerPlayerId;
     // 所属玩家id
+
+    int lv_logicSlotId;
+    // 来源卡牌效果模板内的逻辑slot标识
 
     int[gc_SlotIntParamMax + 1] lv_slotIntParameters;
     // 记录数值型的状态参数
@@ -248,29 +329,6 @@ struct gs_SlotInstance
 };
 
 gs_SlotInstance[gc_SlotInstanceMax + 1] gv_SlotInstanceArray;
-
-//==================================================
-// Effect Instance 在游戏初始化及游戏中，可以创建，删除，修改效果实例并与之交互
-//==================================================
-struct gs_EffectInstance
-{
-    int lv_effectTemplateId;
-    // 效果模板ID，在游戏开始前由数据定义，通常与所在特效模板数组下标相同
-
-    int lv_effectInstanceId;
-    // 效果实例id
-
-    int lv_sourceCardInstanceId;
-    // 所属卡牌实例的id
-
-    int lv_ownerPlayerId;
-    // 所属玩家id
-
-    int lv_slotInstanceId;
-    // 该特效slotId
-};
-
-gs_EffectInstance[gc_EffectInstanceMax + 1] gv_EffectInstanceArray;
 
 // ==================================================
 // targetSelectResult 目标选择结果结构体，用于存储目标选择函数的操作结果
@@ -316,6 +374,10 @@ struct gs_EventContext
     // 事件id
     int lv_effectInstanceId;
     // 事件相关的效果实例id
+
+    int lv_cardEffectInstanceId;
+    // 事件相关的卡牌效果实例id
+
     int lv_slotInstanceId;
     // 事件相关的效果状态实例id
 
