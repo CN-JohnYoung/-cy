@@ -68,6 +68,9 @@ const int gc_SlotIntParamMax     = 8;
 const int gc_SlotStringParamMax  = 8;
 // 效果状态字符串参数数量上限，每个效果状态实例最多可以有8个字符串参数
 
+const int gc_EventUnitMax        = 8;
+// 事件上下文中携带的单位变化数量上限
+
 const int gc_PlayerNormalUnitAmountMax = 100;
 // 玩家场上所有卡牌普通单位总数量上限
 
@@ -79,6 +82,9 @@ struct gs_CardTemplate
 {
     int lv_templateId;
     // 模板ID，在游戏开始前就被创建，通常与所在卡牌模板数组下标相同
+
+    int lv_templateVersion;
+    // 模板版本号，特殊效果修改模板派生内容时递增
 
     string lv_cardName;
     // 卡牌名称
@@ -130,6 +136,12 @@ struct gs_CardInstance
 
     int lv_templateId;
     // 模板ID，指向卡牌模板，决定卡牌的基本属性和效果
+
+    int lv_templateVersion;
+    // 上次按模板初始化或重置时读取的模板版本号
+
+    bool lv_isTemplateDirty;
+    // 模板派生内容是否被运行期操作改动
 
     bool lv_isActivated;
     // 卡牌是否被激活,当实例被销毁时会重置为false
@@ -249,6 +261,9 @@ struct gs_CardEffectTemplate
     int lv_cardEffectTemplateId;
     // 卡牌效果模板id
 
+    int lv_macroId;
+    // UI宏展示id，0表示不是宏展示
+
     int lv_effectInstanceAmount;
     // 该卡牌效果模板中组装的效果实例数量
 
@@ -345,6 +360,30 @@ struct gs_TargetSelectResult
 
 gs_TargetSelectResult gv_CurrentEffectTargetSelectResult;
 
+// ==================================================
+// Card Effect Context 当前正在结算的卡牌效果上下文
+// ==================================================
+
+struct gs_CardEffectContext
+{
+    int lv_effectInstanceId;
+    // 当前正在结算的效果实例id
+
+    int lv_cardEffectInstanceId;
+    // 当前正在结算的卡牌效果实例id
+
+    int lv_slotInstanceId;
+    // 当前正在结算的效果状态实例id
+
+    int lv_ownerCardInstanceId;
+    // 当前卡牌效果所属卡牌实例id
+
+    int lv_ownerPlayerId;
+    // 当前卡牌效果所属玩家id
+};
+
+gs_CardEffectContext gv_CurrentCardEffectContext;
+
 //==================================================
 // Store State 
 //==================================================
@@ -373,16 +412,16 @@ struct gs_EventContext
     int lv_eventId;
     // 事件id
     int lv_effectInstanceId;
-    // 事件相关的效果实例id
+    // 事件来源效果实例id
 
     int lv_cardEffectInstanceId;
-    // 事件相关的卡牌效果实例id
+    // 事件来源卡牌效果实例id
 
     int lv_slotInstanceId;
-    // 事件相关的效果状态实例id
+    // 事件来源效果状态实例id
 
     int lv_sourceCardId;
-    // 事件相关的卡牌实例id
+    // 事件来源卡牌实例id
 
     int lv_targetCardCount;
     // 事件相关的目标卡牌数量
@@ -393,6 +432,15 @@ struct gs_EventContext
     // 事件相关的来源玩家id
     int lv_targetPlayerId;
     // 事件相关的目标玩家id
+
+    int lv_unitCount;
+    // 事件相关的单位变化数量
+
+    string[gc_EventUnitMax + 1] lv_unitIdArray;
+    // 事件相关的单位id数组
+
+    int[gc_EventUnitMax + 1] lv_unitAmountArray;
+    // 事件相关的实际单位数量数组
 
     int lv_intParamNum;
     // 事件相关的整数参数数量

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>宏机制包装方案</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f6f4ef;
+      color: #1f2933;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+    h1 {
+      font-size: 28px;
+      margin: 0 0 8px;
+      letter-spacing: 0;
+    }
+    .lead {
+      margin: 0 0 24px;
+      color: #5c6672;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #d8d2c8;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 22px rgba(31, 41, 51, 0.08);
+    }
+    .panel h2 {
+      font-size: 18px;
+      margin: 0;
+      padding: 16px 18px;
+      border-bottom: 1px solid #e6e0d7;
+      background: #fdfbf7;
+    }
+    .card {
+      margin: 18px;
+      border: 2px solid #51565d;
+      border-radius: 8px;
+      background: linear-gradient(#38404a, #202831);
+      color: #f7fafc;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      padding: 14px 16px 10px;
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,.18);
+    }
+    .art {
+      margin: 14px 16px;
+      height: 84px;
+      border-radius: 6px;
+      background:
+        radial-gradient(circle at 26% 44%, #f9d371 0 12px, transparent 13px),
+        linear-gradient(135deg, #596a7c, #1f2f3f);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+    .rules {
+      padding: 0 16px 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .line {
+      line-height: 1.45;
+      color: #e6edf5;
+      font-size: 14px;
+    }
+    .keyword {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #ffd166;
+      color: #2d2410;
+      font-weight: 700;
+      box-shadow: 0 0 0 2px rgba(255,209,102,.22);
+    }
+    .block {
+      border: 1px solid rgba(255, 209, 102, .7);
+      background: rgba(255, 209, 102, .12);
+      border-radius: 6px;
+      padding: 9px;
+    }
+    .block-head {
+      color: #ffd166;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+    .chain {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+    }
+    .chip {
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 6px;
+      padding: 7px 8px;
+      background: rgba(255,255,255,.08);
+      font-size: 13px;
+    }
+    .chip.macro {
+      border-color: rgba(255,209,102,.8);
+      background: rgba(255,209,102,.18);
+      color: #ffe7a6;
+      font-weight: 700;
+    }
+    .notes {
+      padding: 0 18px 18px;
+      color: #48515c;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+    .notes b {
+      color: #1f2933;
+    }
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>“反应堆：XXX”宏包装的三种方向</h1>
+  <p class="lead">同一个规则：回合结束时，如果本卡牌内有反应堆，则触发 XXX。区别在于宏到底是纯展示标签、规则模板，还是完整的效果组合层。</p>
+
+  <section class="grid">
+    <article class="panel">
+      <h2>A. 关键词徽章</h2>
+      <div class="card">
+        <div class="card-title">科技兵营</div>
+        <div class="art"></div>
+        <div class="rules">
+          <div class="line"><span class="keyword">反应堆</span>：召唤 1 个陆战队员。</div>
+          <div class="line">每当你购买人族牌时，获得 1 个晶体矿。</div>
+        </div>
+      </div>
+      <div class="notes"><b>含义：</b>宏主要服务 UI 和文案。实际底层仍配置完整 EffectInstance，UI 识别 macroId 后高亮“反应堆”。</div>
+    </article>
+
+    <article class="panel">
+      <h2>B. 可展开规则块</h2>
+      <div class="card">
+        <div class="card-title">科技兵营</div>
+        <div class="art"></div>
+        <div class="rules">
+          <div class="block">
+            <div class="block-head">反应堆</div>
+            <div class="line">回合结束时，如果本卡牌有反应堆：</div>
+            <div class="line">召唤 1 个陆战队员。</div>
+          </div>
+          <div class="line">每当你购买人族牌时，获得 1 个晶体矿。</div>
+        </div>
+      </div>
+      <div class="notes"><b>含义：</b>宏同时控制展示和解释。卡面短写，详情/悬浮层显示展开后的触发条件。</div>
+    </article>
+
+    <article class="panel">
+      <h2>C. 效果链包装器</h2>
+      <div class="card">
+        <div class="card-title">科技兵营</div>
+        <div class="art"></div>
+        <div class="rules">
+          <div class="chain">
+            <div class="chip macro">Macro: 反应堆</div>
+            <div class="chip">listenEvent = 回合结束</div>
+            <div class="chip">condition = 本卡有反应堆</div>
+            <div class="chip">operation = XXX</div>
+          </div>
+        </div>
+      </div>
+      <div class="notes"><b>含义：</b>宏是数据生成层。配置“反应堆 + XXX”后自动生成 EffectInstance/CardEffectTemplate 片段，UI 从宏元数据高亮。</div>
+    </article>
+  </section>
+</main>
+</body>
+</html>
