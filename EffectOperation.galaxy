@@ -19,7 +19,7 @@ void gf_CardTemplateAddNormalUnit(int lp_cardTemplateId, string lp_unitId, int l
     lv_unitIndex = gf_CardTemplateGetNormalUnitIndex(lp_cardTemplateId, "");
     lv_cardTemplate.lv_unitIds[lv_unitIndex] = lp_unitId;
     lv_cardTemplate.lv_unitAmounts[lv_unitIndex] = lp_unitAmount;
-    lv_cardTemplate.lv_unitTypeAmount += 1;
+    lv_cardTemplate.lv_normalUnitTypeAmount += 1;
 }
 
 // 给指定卡牌模板添加特殊单位，不处理任何区域规则
@@ -64,7 +64,7 @@ void gf_CardInstanceAddNormalUnit(int lp_cardInstanceId, string lp_unitId, int l
     lv_unitIndex = gf_CardInstanceGetNormalUnitIndex(lp_cardInstanceId, "");
     lv_cardInstance.lv_unitIds[lv_unitIndex] = lp_unitId;
     lv_cardInstance.lv_unitAmounts[lv_unitIndex] = lp_unitAmount;
-    lv_cardInstance.lv_unitTypeAmount += 1;
+    lv_cardInstance.lv_normalUnitTypeAmount += 1;
     lv_cardInstance.lv_cardTotalunitAmount += lp_unitAmount;
 }
 
